@@ -231,72 +231,241 @@
                 });
             };
             
-            // Session logging message event listener
+            // Session logging message event listener for WhatsApp Business app onboarding
             window.addEventListener('message', (event) => {
                 if (!event.origin.endsWith('facebook.com')) return;
+                
                 try {
                     const data = JSON.parse(event.data);
+                    console.log('Session logging event received:', data);
+                    
+                    // Handle different types of WhatsApp events
                     if (data.type === 'WA_EMBEDDED_SIGNUP') {
-                        console.log('WhatsApp signup event: ', data);
-                        if (data.status === 'success') {
-                            // WhatsApp setup completed, fetch data
-                            setTimeout(() => {
-                                fetchWhatsAppData();
-                            }, 2000);
-                        }
+                        handleWhatsAppSignupEvent(data);
+                    } else if (data.type === 'WA_BUSINESS_APP_ONBOARDING') {
+                        handleBusinessAppOnboardingEvent(data);
+                    } else if (data.type === 'WA_PHONE_NUMBER_VERIFICATION') {
+                        handlePhoneNumberVerificationEvent(data);
+                    } else if (data.type === 'WA_QR_CODE_SCAN') {
+                        handleQRCodeScanEvent(data);
+                    } else if (data.type === 'WA_ONBOARDING_COMPLETE') {
+                        handleOnboardingCompleteEvent(data);
                     }
+                    
                 } catch (e) {
-                    console.log('Message event: ', event.data);
+                    console.log('Raw message event data:', event.data);
                 }
             });
+
+            // Handle WhatsApp signup events
+            function handleWhatsAppSignupEvent(data) {
+                console.log('WhatsApp signup event:', data);
+                
+                if (data.status === 'success') {
+                    showSuccess('WhatsApp signup completato con successo!');
+                    // The actual data will come through other events
+                } else if (data.status === 'error') {
+                    showError(`Errore durante il signup WhatsApp: ${data.error || 'Errore sconosciuto'}`);
+                }
+            }
+
+            // Handle WhatsApp Business app onboarding events
+            function handleBusinessAppOnboardingEvent(data) {
+                console.log('WhatsApp Business app onboarding event:', data);
+                
+                if (data.status === 'started') {
+                    showInfo('Onboarding WhatsApp Business app iniziato. Inserisci il tuo numero di telefono.');
+                } else if (data.status === 'phone_number_entered') {
+                    showInfo('Numero di telefono inserito. In attesa del codice QR...');
+                }
+            }
+
+            // Handle phone number verification events
+            function handlePhoneNumberVerificationEvent(data) {
+                console.log('Phone number verification event:', data);
+                
+                if (data.status === 'verified') {
+                    showSuccess('Numero di telefono verificato!');
+                    // Show QR code if available
+                    if (data.qr_code) {
+                        showQRCode(data.qr_code);
+                    }
+                } else if (data.status === 'verification_required') {
+                    showInfo('Verifica del numero di telefono richiesta. Controlla il tuo WhatsApp Business app.');
+                }
+            }
+
+            // Handle QR code scan events
+            function handleQRCodeScanEvent(data) {
+                console.log('QR code scan event:', data);
+                
+                if (data.status === 'scanned') {
+                    showSuccess('Codice QR scansionato! In attesa della conferma...');
+                } else if (data.status === 'confirmed') {
+                    showSuccess('Onboarding confermato! Sincronizzazione in corso...');
+                }
+            }
+
+            // Handle onboarding completion
+            function handleOnboardingCompleteEvent(data) {
+                console.log('Onboarding complete event:', data);
+                
+                if (data.status === 'success') {
+                    showSuccess('Onboarding WhatsApp Business app completato con successo!');
+                    
+                    // Extract and display the business data
+                    if (data.business_data) {
+                        displayBusinessData(data.business_data);
+                    }
+                    
+                    // Extract phone number information
+                    if (data.phone_numbers) {
+                        displayPhoneNumbers(data.phone_numbers);
+                    }
+                    
+                    // Extract account information
+                    if (data.account_info) {
+                        displayAccountInfo(data.account_info);
+                    }
+                } else if (data.status === 'error') {
+                    showError(`Errore durante l'onboarding: ${data.error || 'Errore sconosciuto'}`);
+                }
+            }
+
+            // Display business data in the table
+            function displayBusinessData(businessData) {
+                const whatsappDataDiv = document.getElementById('whatsappData');
+                
+                if (!businessData || businessData.length === 0) {
+                    whatsappDataDiv.innerHTML = `
+                        <div class="text-center py-12">
+                            <div class="inline-flex items-center px-4 py-2 font-semibold text-gray-500">
+                                <svg class="w-8 h-8 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                                </svg>
+                                Nessun dato business disponibile
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Create table with business data
+                let tableHTML = `
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border border-gray-200 rounded-lg overflow-hidden shadow-lg">
+                            <thead class="bg-gradient-to-r from-whatsapp to-green-500">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">Numero di Telefono</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">ID Numero Telefono</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">ID Account WhatsApp Business</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">Nome Account</th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">Stato</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                `;
+
+                businessData.forEach((item, index) => {
+                    tableHTML += `
+                        <tr class="hover:bg-gray-50 transition-colors duration-200 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.phone_number || '-'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${item.phone_number_id || '-'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${item.waba_id || '-'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.business_name || '-'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Onboarded
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableHTML += '</tbody></table></div>';
+                whatsappDataDiv.innerHTML = tableHTML;
+            }
+
+            // Display phone numbers data
+            function displayPhoneNumbers(phoneNumbers) {
+                console.log('Displaying phone numbers:', phoneNumbers);
+                // This function can be used to display additional phone number details
+            }
+
+            // Display account information
+            function displayAccountInfo(accountInfo) {
+                console.log('Displaying account info:', accountInfo);
+                // This function can be used to display account details
+            }
+
+            // Show QR code for scanning
+            function showQRCode(qrCodeData) {
+                const whatsappDataDiv = document.getElementById('whatsappData');
+                
+                whatsappDataDiv.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="bg-white p-8 rounded-lg shadow-lg max-w-md mx-auto">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">Scansiona il Codice QR</h3>
+                            <div class="bg-gray-100 p-4 rounded-lg mb-4">
+                                <img src="${qrCodeData}" alt="QR Code" class="mx-auto" style="max-width: 200px;">
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">
+                                Apri la tua app WhatsApp Business e scansiona questo codice QR per completare l'onboarding.
+                            </p>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <p class="text-sm text-blue-800">
+                                    <strong>Nota:</strong> Dopo la scansione, riceverai un messaggio WhatsApp con le istruzioni per completare il processo.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
             
-            // Response callback
+            // Response callback for WhatsApp Business app onboarding
             const fbLoginCallback = (response) => {
-                if (response.authResponse && response.authResponse.code) {
-                    // We got an authorization code, now we need to exchange it for an access token
-                    exchangeCodeForToken(response.authResponse.code);
+                console.log('Facebook login response:', response);
+                
+                if (response.authResponse) {
+                    // Successfully authenticated with Facebook
+                    handleFacebookAuthSuccess(response.authResponse);
+                } else if (response.status === 'not_authorized') {
+                    console.log('User cancelled the login');
+                    showError('Login annullato dall\'utente. Riprova.');
                 } else {
-                    console.log('Login failed: ', response);
+                    console.log('Login failed:', response);
                     showError('Login fallito. Riprova.');
                 }
             }
 
-            // Exchange authorization code for access token
-            async function exchangeCodeForToken(code) {
-                try {
-                    // This would typically be done on your backend server
-                    // For demo purposes, we'll show how to handle the code
-                    console.log('Authorization code received:', code);
-                    
-                    // In a real application, you would send this code to your backend
-                    // which would exchange it for an access token using your app secret
-                    
-                    // For now, we'll simulate a successful login
-                    // In production, you need to implement the server-side token exchange
-                    showError('Per utilizzare questa applicazione, è necessario implementare lo scambio del codice di autorizzazione sul server. Contatta lo sviluppatore per assistenza.');
-                    
-                    // Uncomment the following lines when you have a backend server:
-                    /*
-                    const tokenResponse = await fetch('/api/exchange-code', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ code: code })
-                    });
-                    
-                    const tokenData = await tokenResponse.json();
-                    if (tokenData.access_token) {
-                        accessToken = tokenData.access_token;
-                        userId = tokenData.user_id;
-                        handleLoginSuccess();
-                    }
-                    */
-                    
-                } catch (error) {
-                    console.error('Error exchanging code for token:', error);
-                    showError('Errore durante l\'autenticazione. Riprova.');
-                }
+            // Handle successful Facebook authentication
+            function handleFacebookAuthSuccess(authResponse) {
+                console.log('Facebook auth successful:', authResponse);
+                
+                // For WhatsApp Business app onboarding, we need to wait for the session logging
+                // The actual WhatsApp data will come through the message event listener
+                showInfo('Autenticazione Facebook completata. In attesa dei dati WhatsApp...');
+                
+                // Show a loading state
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('whatsappSection').classList.remove('hidden');
+                
+                // Show loading message
+                document.getElementById('whatsappData').innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-gray-600 transition ease-in-out duration-150">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-whatsapp" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            In attesa dei dati WhatsApp Business...
+                        </div>
+                        <div class="mt-4 text-sm text-gray-500">
+                            <p>Se hai un account WhatsApp Business app, inserisci il tuo numero di telefono</p>
+                            <p>e segui le istruzioni per completare l'onboarding.</p>
+                        </div>
+                    </div>
+                `;
             }
 
             // Handle successful login
