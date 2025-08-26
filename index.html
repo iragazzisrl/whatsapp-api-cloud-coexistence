@@ -458,9 +458,13 @@
             const launchWhatsAppSignup = () => {
                 FB.login(fbLoginCallback, {
                     config_id: '1087299900253314',
-                    scope: 'whatsapp_business_management,whatsapp_business_messaging',
                     response_type: 'code',
-                    override_default_response_type: true
+                    override_default_response_type: true,
+                    extras: {
+                        setup: {},
+                        featureType: 'whatsapp_business_app_onboarding', // set to 'whatsapp_business_app_onboarding'
+                        sessionInfoVersion: '3'
+                    }
                 });
             }
 
