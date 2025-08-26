@@ -140,13 +140,6 @@ FB.init({
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📞 Support
-
-For support and questions:
-- Create an issue in this repository
-- Contact: [your-email@example.com]
-- Documentation: [link-to-docs]
-
 ## 🙏 Acknowledgments
 
 - Facebook for the SDK and API
