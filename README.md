@@ -1,39 +1,50 @@
-# WhatsApp API Cloud Dashboard
+# WhatsApp API Cloud Dashboard - Coexistence Mode
 
-A modern, responsive web application that allows users to view and manage their WhatsApp Business API Cloud data through Facebook login integration.
+A modern, responsive web application that allows existing WhatsApp Business app users to onboard to WhatsApp Cloud API while maintaining synchronization with their existing app. This implements the **Coexistence** flow as described in the [official Facebook documentation](https://developers.facebook.com/docs/whatsapp/embedded-signup/custom-flows/onboarding-business-app-users/).
 
 ## 🚀 Features
 
 - **🔐 Facebook Login Integration**: Secure authentication using Facebook SDK
-- **📱 WhatsApp Business Data**: View phone numbers, account IDs, and business information
+- **📱 WhatsApp Business App Onboarding**: Connect existing WhatsApp Business app accounts
+- **🔄 Coexistence Mode**: Maintain both app and API functionality simultaneously
+- **📊 Real-time Data Display**: View phone numbers, account IDs, and business information
 - **🎨 Modern UI/UX**: Built with Tailwind CSS for a professional, responsive design
-- **📊 Data Table**: Comprehensive display of WhatsApp Business account information
-- **🔄 Real-time Updates**: Refresh data on demand
 - **📱 Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
 
-## 📋 Data Displayed
+## 📋 What is Coexistence Mode?
 
-The dashboard shows the following WhatsApp Business information:
+Coexistence mode allows businesses to:
+- **Keep using their existing WhatsApp Business app** for individual chats
+- **Access WhatsApp Cloud API** for bulk messaging and automation
+- **Maintain message synchronization** between both platforms
+- **Preserve chat history** and contacts
+- **Use both platforms simultaneously** without losing functionality
+
+## 📊 Data Displayed
+
+The dashboard shows the following WhatsApp Business information after successful onboarding:
 - **Phone Number**: Associated WhatsApp phone number
 - **Phone Number ID**: Unique identifier for the phone number
 - **WhatsApp Business Account ID**: Business account identifier
 - **Account Name**: Name of the business account
-- **Verification Status**: Phone number verification status
+- **Status**: Onboarding completion status
 
 ## 🛠️ Technology Stack
 
 - **Frontend**: HTML5, JavaScript (ES6+)
 - **Styling**: Tailwind CSS
-- **Authentication**: Facebook SDK
-- **APIs**: Facebook Graph API, WhatsApp Business API
-- **Icons**: Heroicons (SVG)
+- **Authentication**: Facebook SDK with Embedded Signup
+- **APIs**: WhatsApp Business API Cloud
+- **Session Logging**: Real-time event handling for onboarding flow
 
 ## 📦 Installation & Setup
 
 ### Prerequisites
 - Facebook Developer Account
 - WhatsApp Business API access
-- Web server (local or hosted)
+- Solution Partner or Tech Provider status
+- Web server with HTTPS enabled
+- Webhook callback capability
 
 ### Setup Steps
 
@@ -48,15 +59,18 @@ The dashboard shows the following WhatsApp Business information:
    - Create a new app or use existing one
    - Get your App ID
    - Configure WhatsApp Business permissions
+   - Set up Embedded Signup with session logging
 
 3. **Update Configuration**
    - Open `index.html`
    - Replace `'777058068339656'` with your Facebook App ID
    - Update `config_id` with your WhatsApp Business configuration ID
+   - Ensure `featureType: 'whatsapp_business_app_onboarding'` is set
 
 4. **Deploy**
    - Upload files to your web server
    - Ensure HTTPS is enabled (required for Facebook login)
+   - Configure webhook endpoints for session logging
 
 ## 🔧 Configuration
 
@@ -70,16 +84,46 @@ FB.init({
 });
 ```
 
+### WhatsApp Business Onboarding Configuration
+```javascript
+FB.login(fbLoginCallback, {
+    config_id: 'YOUR_CONFIG_ID',
+    scope: 'whatsapp_business_management,whatsapp_business_messaging',
+    response_type: 'code',
+    override_default_response_type: true,
+    extras: {
+        setup: {},
+        featureType: 'whatsapp_business_app_onboarding',
+        sessionInfoVersion: '3'
+    }
+});
+```
+
 ### Required Permissions
 - `whatsapp_business_management`
 - `whatsapp_business_messaging`
 
-## 📱 Usage
+## 📱 How Coexistence Works
 
-1. **Access the Dashboard**: Open the application in your web browser
-2. **Login**: Click "Accedi con Facebook" to authenticate
-3. **View Data**: After successful login, your WhatsApp Business data will be displayed
-4. **Refresh**: Use the "Aggiorna Dati" button to refresh information
+### 1. **User Authentication**
+- User clicks "Inizia Onboarding WhatsApp Business"
+- Facebook login process begins
+- User authenticates with Facebook
+
+### 2. **WhatsApp Business App Onboarding**
+- User enters their existing WhatsApp Business phone number
+- System generates a QR code for verification
+- User scans QR code with their WhatsApp Business app
+
+### 3. **Synchronization Setup**
+- User receives WhatsApp message with instructions
+- User confirms synchronization preferences
+- Chat history and contacts sync options presented
+
+### 4. **Onboarding Completion**
+- System receives confirmation through session logging
+- Business data is extracted and displayed
+- User can now use both app and API simultaneously
 
 ## 🌐 Browser Support
 
@@ -92,41 +136,47 @@ FB.init({
 
 - Responsive design optimized for mobile devices
 - Touch-friendly interface
-- Mobile-optimized table layout
+- Mobile-optimized onboarding flow
+- QR code scanning support
 
 ## 🔒 Security Features
 
 - HTTPS required for Facebook login
-- Secure token handling
+- Session logging for secure onboarding
 - No sensitive data stored locally
+- Secure token handling through Facebook
 
-## 🚨 Troubleshooting
+## 🚨 Requirements & Limitations
 
-### Common Issues
+### **Business Requirements**
+- WhatsApp Business app version **2.24.17** or higher
+- Supported country code (see limitations below)
+- Solution Partner or Tech Provider status
+- Webhook callback capability
 
-1. **Login Failed**
-   - Ensure HTTPS is enabled
-   - Check Facebook App configuration
-   - Verify required permissions are granted
+### **Limitations**
+- **Fixed throughput**: 5 messages per second for coexistence numbers
+- **Marketing API**: Cannot use Marketing Messages Lite API
+- **Unsupported countries**: Australia, Japan, Nigeria, Philippines, Russia, South Korea, South Africa, Turkey
+- **Unsupported regions**: European Economic Area, European Union, United Kingdom
 
-2. **No WhatsApp Data**
-   - Confirm WhatsApp Business API access
-   - Check account permissions
-   - Verify phone number association
-
-3. **API Errors**
-   - Check access token validity
-   - Verify API endpoint permissions
-   - Review Facebook App settings
+### **Feature Changes After Onboarding**
+- **Message Edit/Revoke**: No longer supported in WhatsApp Business app
+- **Disappearing messages**: Turned off for individual chats
+- **View once messages**: Disabled for individual chats
+- **Live location**: Disabled for individual chats
+- **Broadcast lists**: Become read-only
 
 ## 📈 Future Enhancements
 
 - [ ] Message analytics dashboard
-- [ ] Contact management
+- [ ] Contact management interface
 - [ ] Template message creation
-- [ ] Webhook configuration
+- [ ] Webhook configuration panel
 - [ ] Multi-language support
 - [ ] Dark mode toggle
+- [ ] Bulk messaging interface
+- [ ] Chat history viewer
 
 ## 🤝 Contributing
 
@@ -142,11 +192,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Facebook for the SDK and API
-- WhatsApp for Business API
-- Tailwind CSS team for the amazing framework
-- Heroicons for the beautiful SVG icons
+- [Facebook for the WhatsApp Business Platform](https://developers.facebook.com/docs/whatsapp/)
+- [WhatsApp Business API documentation](https://developers.facebook.com/docs/whatsapp/cloud-api)
+- [Tailwind CSS team](https://tailwindcss.com/) for the amazing framework
+- [Heroicons](https://heroicons.com/) for the beautiful SVG icons
 
 ---
 
-**Note**: This application requires proper Facebook App configuration and WhatsApp Business API access to function correctly.
+**Note**: This application implements the official WhatsApp Business app coexistence flow and requires proper Facebook App configuration, WhatsApp Business API access, and webhook setup to function correctly.
