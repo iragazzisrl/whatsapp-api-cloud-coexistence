@@ -3,67 +3,348 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Whatsapp Api Cloud Login</title>
+        <title>WhatsApp API Cloud - Dashboard</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background-color: #f5f5f5;
+            }
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                padding: 30px;
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding-bottom: 20px;
+                border-bottom: 2px solid #25D366;
+            }
+            .header h1 {
+                color: #25D366;
+                margin: 0;
+                font-size: 2.5em;
+            }
+            .header p {
+                color: #666;
+                margin: 10px 0 0 0;
+            }
+            .login-section {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .login-btn {
+                background-color: #1877f2;
+                border: 0;
+                border-radius: 8px;
+                color: #fff;
+                cursor: pointer;
+                font-family: inherit;
+                font-size: 16px;
+                font-weight: bold;
+                height: 50px;
+                padding: 0 30px;
+                transition: background-color 0.3s;
+            }
+            .login-btn:hover {
+                background-color: #166fe5;
+            }
+            .user-info {
+                background: #f8f9fa;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 30px;
+                border-left: 4px solid #25D366;
+            }
+            .user-info h3 {
+                margin: 0 0 15px 0;
+                color: #333;
+            }
+            .user-info p {
+                margin: 5px 0;
+                color: #666;
+            }
+            .whatsapp-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+                background: white;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .whatsapp-table th {
+                background-color: #25D366;
+                color: white;
+                padding: 15px;
+                text-align: left;
+                font-weight: 600;
+            }
+            .whatsapp-table td {
+                padding: 15px;
+                border-bottom: 1px solid #eee;
+            }
+            .whatsapp-table tr:hover {
+                background-color: #f8f9fa;
+            }
+            .whatsapp-table tr:last-child td {
+                border-bottom: none;
+            }
+            .loading {
+                text-align: center;
+                padding: 40px;
+                color: #666;
+            }
+            .error {
+                background: #f8d7da;
+                color: #721c24;
+                padding: 15px;
+                border-radius: 5px;
+                margin: 20px 0;
+                border: 1px solid #f5c6cb;
+            }
+            .hidden {
+                display: none;
+            }
+            .refresh-btn {
+                background-color: #25D366;
+                border: 0;
+                border-radius: 5px;
+                color: white;
+                cursor: pointer;
+                padding: 10px 20px;
+                margin-top: 20px;
+                font-weight: 500;
+            }
+            .refresh-btn:hover {
+                background-color: #1ea952;
+            }
+        </style>
     </head>
     <body>
-			<!-- SDK loading -->
-			<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+        <div class="container">
+            <div class="header">
+                <h1>WhatsApp API Cloud Dashboard</h1>
+                <p>Gestisci il tuo account WhatsApp Business</p>
+            </div>
 
-			<script>
-				// SDK initialization
-				window.fbAsyncInit = function() {
-					FB.init({
-						appId: '777058068339656', // your app ID goes here
-						autoLogAppEvents: true,
-						xfbml: true,
-						version: 'v23.0' // Graph API version goes here
-					});
-				};
-				
-				// Session logging message event listener
-				window.addEventListener('message', (event) => {
-					if (!event.origin.endsWith('facebook.com')) return;
-					try {
-						const data = JSON.parse(event.data);
-						if (data.type === 'WA_EMBEDDED_SIGNUP') {
-							console.log('message event: ', data); // remove after testing
-							// your code goes here
-						}
-					} catch {
-						console.log('message event: ', event.data); // remove after testing
-						// your code goes here
-					}
-				});
-				
-				// Response callback
-				const fbLoginCallback = (response) => {
-					if (response.authResponse) {
-						const code = response.authResponse.code;
-						console.log('response: ', code); // remove after testing
-						// your code goes here
-					} else {
-						console.log('response: ', response); // remove after testing
-						// your code goes here
-					}
-				}
-				
-				// Launch method and callback registration
-				const launchWhatsAppSignup = () => {
-					FB.login(fbLoginCallback, {
-						config_id: '1087299900253314', // your configuration ID goes here
-						response_type: 'code',
-						override_default_response_type: true,
-						extras: {
-							setup: {},
-							// todo: checkme
-							featureType: 'cloud_login',
-							sessionInfoVersion: '3',
-						}
-					});
-				}
-			</script>
+            <!-- Login Section -->
+            <div class="login-section" id="loginSection">
+                <button class="login-btn" onclick="launchWhatsAppSignup()">
+                    Accedi con Facebook
+                </button>
+            </div>
 
-			<!-- Launch button  -->
-			<button onclick="launchWhatsAppSignup()" style="background-color: #1877f2; border: 0; border-radius: 4px; color: #fff; cursor: pointer; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: bold; height: 40px; padding: 0 24px;">Login with Facebook</button>
+            <!-- User Info Section -->
+            <div class="user-info hidden" id="userInfo">
+                <h3>Informazioni Utente</h3>
+                <p><strong>Nome:</strong> <span id="userName">-</span></p>
+                <p><strong>Email:</strong> <span id="userEmail">-</span></p>
+                <p><strong>ID Facebook:</strong> <span id="userId">-</span></p>
+            </div>
+
+            <!-- WhatsApp Data Section -->
+            <div class="hidden" id="whatsappSection">
+                <h2>Dati WhatsApp Business</h2>
+                <div id="whatsappData">
+                    <div class="loading">Caricamento dati WhatsApp...</div>
+                </div>
+                <button class="refresh-btn" onclick="fetchWhatsAppData()">Aggiorna Dati</button>
+            </div>
+        </div>
+
+        <!-- SDK loading -->
+        <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+
+        <script>
+            let accessToken = null;
+            let userId = null;
+
+            // SDK initialization
+            window.fbAsyncInit = function() {
+                FB.init({
+                    appId: '777058068339656',
+                    autoLogAppEvents: true,
+                    xfbml: true,
+                    version: 'v23.0'
+                });
+
+                // Check if user is already logged in
+                FB.getLoginStatus(function(response) {
+                    if (response.status === 'connected') {
+                        handleLoginSuccess(response);
+                    }
+                });
+            };
+            
+            // Session logging message event listener
+            window.addEventListener('message', (event) => {
+                if (!event.origin.endsWith('facebook.com')) return;
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'WA_EMBEDDED_SIGNUP') {
+                        console.log('WhatsApp signup event: ', data);
+                        if (data.status === 'success') {
+                            // WhatsApp setup completed, fetch data
+                            setTimeout(() => {
+                                fetchWhatsAppData();
+                            }, 2000);
+                        }
+                    }
+                } catch (e) {
+                    console.log('Message event: ', event.data);
+                }
+            });
+            
+            // Response callback
+            const fbLoginCallback = (response) => {
+                if (response.authResponse) {
+                    handleLoginSuccess(response);
+                } else {
+                    console.log('Login failed: ', response);
+                    showError('Login fallito. Riprova.');
+                }
+            }
+
+            // Handle successful login
+            function handleLoginSuccess(response) {
+                accessToken = response.authResponse.accessToken;
+                userId = response.authResponse.userID;
+                
+                // Hide login section and show user info
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('userInfo').classList.remove('hidden');
+                document.getElementById('whatsappSection').classList.remove('hidden');
+                
+                // Fetch user profile
+                fetchUserProfile();
+                
+                // Fetch WhatsApp data
+                fetchWhatsAppData();
+            }
+
+            // Fetch user profile from Facebook
+            function fetchUserProfile() {
+                FB.api('/me', { fields: 'name,email' }, function(response) {
+                    if (response && !response.error) {
+                        document.getElementById('userName').textContent = response.name || '-';
+                        document.getElementById('userEmail').textContent = response.email || '-';
+                        document.getElementById('userId').textContent = userId;
+                    }
+                });
+            }
+
+            // Fetch WhatsApp Business data
+            async function fetchWhatsAppData() {
+                const whatsappDataDiv = document.getElementById('whatsappData');
+                whatsappDataDiv.innerHTML = '<div class="loading">Caricamento dati WhatsApp...</div>';
+
+                try {
+                    // First, get the WhatsApp Business accounts
+                    const accountsResponse = await fetch(`https://graph.facebook.com/v23.0/me/whatsapp_business_accounts?access_token=${accessToken}`);
+                    const accountsData = await accountsResponse.json();
+
+                    if (accountsData.error) {
+                        throw new Error(accountsData.error.message);
+                    }
+
+                    if (!accountsData.data || accountsData.data.length === 0) {
+                        whatsappDataDiv.innerHTML = '<p>Nessun account WhatsApp Business trovato.</p>';
+                        return;
+                    }
+
+                    // Get phone numbers for each account
+                    const phoneNumbersPromises = accountsData.data.map(async (account) => {
+                        const phoneResponse = await fetch(`https://graph.facebook.com/v23.0/${account.id}/phone_numbers?access_token=${accessToken}`);
+                        const phoneData = await phoneResponse.json();
+                        return {
+                            account: account,
+                            phones: phoneData.data || []
+                        };
+                    });
+
+                    const allData = await Promise.all(phoneNumbersPromises);
+                    
+                    // Create table
+                    let tableHTML = `
+                        <table class="whatsapp-table">
+                            <thead>
+                                <tr>
+                                    <th>Numero di Telefono</th>
+                                    <th>ID Numero Telefono</th>
+                                    <th>ID Account WhatsApp Business</th>
+                                    <th>Nome Account</th>
+                                    <th>Stato</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    allData.forEach(({ account, phones }) => {
+                        if (phones.length > 0) {
+                            phones.forEach(phone => {
+                                tableHTML += `
+                                    <tr>
+                                        <td>${phone.phone_number || '-'}</td>
+                                        <td>${phone.id || '-'}</td>
+                                        <td>${account.id || '-'}</td>
+                                        <td>${account.name || '-'}</td>
+                                        <td>${phone.verified_name || 'Non verificato'}</td>
+                                    </tr>
+                                `;
+                            });
+                        } else {
+                            tableHTML += `
+                                <tr>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>${account.id || '-'}</td>
+                                    <td>${account.name || '-'}</td>
+                                    <td>Nessun numero associato</td>
+                                </tr>
+                            `;
+                        }
+                    });
+
+                    tableHTML += '</tbody></table>';
+                    whatsappDataDiv.innerHTML = tableHTML;
+
+                } catch (error) {
+                    console.error('Error fetching WhatsApp data:', error);
+                    whatsappDataDiv.innerHTML = `
+                        <div class="error">
+                            Errore nel caricamento dei dati WhatsApp: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            // Launch method and callback registration
+            const launchWhatsAppSignup = () => {
+                FB.login(fbLoginCallback, {
+										config_id: '1087299900253314',
+                    scope: 'whatsapp_business_management,whatsapp_business_messaging',
+                    response_type: 'token',
+                    override_default_response_type: true
+                });
+            }
+
+            // Show error message
+            function showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.textContent = message;
+                document.querySelector('.container').appendChild(errorDiv);
+                
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
+            }
+        </script>
     </body>
 </html>
