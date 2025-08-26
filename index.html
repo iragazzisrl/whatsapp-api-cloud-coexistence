@@ -117,6 +117,14 @@
                 <div class="p-8">
                     <!-- Login Section -->
                     <div class="text-center mb-12" id="loginSection">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+                            <h3 class="text-lg font-semibold text-blue-800 mb-3">ℹ️ Informazioni Importanti</h3>
+                            <p class="text-blue-700 text-sm leading-relaxed">
+                                Questa applicazione utilizza il flusso di autenticazione OAuth 2.0 di Facebook per WhatsApp Business API. 
+                                Per funzionare correttamente, è necessario un server backend che gestisca lo scambio del codice di autorizzazione.
+                            </p>
+                        </div>
+                        
                         <button 
                             onclick="launchWhatsAppSignup()" 
                             class="bg-facebook hover:bg-blue-600 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
@@ -126,6 +134,17 @@
                             </svg>
                             Accedi con Facebook
                         </button>
+                        
+                        <div class="mt-6 text-sm text-gray-600 max-w-2xl mx-auto">
+                            <p class="mb-2">📋 <strong>Flusso di Autenticazione:</strong></p>
+                            <ol class="list-decimal list-inside space-y-1 text-left">
+                                <li>L'utente clicca su "Accedi con Facebook"</li>
+                                <li>Facebook restituisce un codice di autorizzazione</li>
+                                <li>Il codice viene inviato al server backend</li>
+                                <li>Il server scambia il codice con un access token</li>
+                                <li>L'applicazione utilizza il token per accedere alle API</li>
+                            </ol>
+                        </div>
                     </div>
 
                     <!-- User Info Section -->
@@ -233,19 +252,55 @@
             
             // Response callback
             const fbLoginCallback = (response) => {
-                if (response.authResponse) {
-                    handleLoginSuccess(response);
+                if (response.authResponse && response.authResponse.code) {
+                    // We got an authorization code, now we need to exchange it for an access token
+                    exchangeCodeForToken(response.authResponse.code);
                 } else {
                     console.log('Login failed: ', response);
                     showError('Login fallito. Riprova.');
                 }
             }
 
+            // Exchange authorization code for access token
+            async function exchangeCodeForToken(code) {
+                try {
+                    // This would typically be done on your backend server
+                    // For demo purposes, we'll show how to handle the code
+                    console.log('Authorization code received:', code);
+                    
+                    // In a real application, you would send this code to your backend
+                    // which would exchange it for an access token using your app secret
+                    
+                    // For now, we'll simulate a successful login
+                    // In production, you need to implement the server-side token exchange
+                    showError('Per utilizzare questa applicazione, è necessario implementare lo scambio del codice di autorizzazione sul server. Contatta lo sviluppatore per assistenza.');
+                    
+                    // Uncomment the following lines when you have a backend server:
+                    /*
+                    const tokenResponse = await fetch('/api/exchange-code', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ code: code })
+                    });
+                    
+                    const tokenData = await tokenResponse.json();
+                    if (tokenData.access_token) {
+                        accessToken = tokenData.access_token;
+                        userId = tokenData.user_id;
+                        handleLoginSuccess();
+                    }
+                    */
+                    
+                } catch (error) {
+                    console.error('Error exchanging code for token:', error);
+                    showError('Errore durante l\'autenticazione. Riprova.');
+                }
+            }
+
             // Handle successful login
-            function handleLoginSuccess(response) {
-                accessToken = response.authResponse.accessToken;
-                userId = response.authResponse.userID;
-                
+            function handleLoginSuccess() {
                 // Hide login section and show user info
                 document.getElementById('loginSection').classList.add('hidden');
                 document.getElementById('userInfo').classList.remove('hidden');
@@ -260,11 +315,16 @@
 
             // Fetch user profile from Facebook
             function fetchUserProfile() {
+                if (!accessToken) {
+                    console.log('No access token available for profile fetch');
+                    return;
+                }
+                
                 FB.api('/me', { fields: 'name,email' }, function(response) {
                     if (response && !response.error) {
                         document.getElementById('userName').textContent = response.name || '-';
                         document.getElementById('userEmail').textContent = response.email || '-';
-                        document.getElementById('userId').textContent = userId;
+                        document.getElementById('userId').textContent = userId || '-';
                     }
                 });
             }
